@@ -25,7 +25,18 @@ class NagaokaMain:
         self._db_file_path: Final[Path] = Path()
 
     def main(self):
-        pass
+        try:
+            webpage_text: Final[str] = self._download_page()
+            disaster_text_info_list = [
+                dtext for dtext in self._trim_disaster_text(webpage_text) if self._is_new_disaster_text(dtext)
+            ]
+
+            for disaster_text_info in disaster_text_info_list:
+                # 通知処理
+                self._register_disaster_text(disaster_text_info)
+
+        except Exception:
+            pass
 
     def _download_page(self) -> str:
         res: Final[requests.Response] = requests.get(NagaokaMain.SITE_URL)
