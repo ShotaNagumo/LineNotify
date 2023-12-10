@@ -2,5 +2,9 @@ class DownloadPageError(Exception):
     pass
 
 
-class TrimDisasterTextError(Exception):
+class TextAnalysisError(Exception):
+    pass
+
+
+class DbOperationError(Exception):
     pass

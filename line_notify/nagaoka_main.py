@@ -7,9 +7,10 @@ import datetime
 from logging import getLogger, Logger
 import glob
 from typing import Final
+from pathlib import Path
 
 from logger_initializer import initialize_logger
-from errors import DownloadPageError, TrimDisasterTextError
+from errors import DownloadPageError, TextAnalysisError, DbOperationError
 from structures import DisasterTextInfo, DisasterTextType
 
 
@@ -21,6 +22,7 @@ class NagaokaMain:
         # loggerを初期化し取得
         initialize_logger('nagaoka')
         self._logger: Final[Logger] = getLogger('server_logger')
+        self._db_file_path: Final[Path] = Path()
 
     def main(self):
         pass
@@ -49,7 +51,7 @@ class NagaokaMain:
         )
         m = PAT.match(webpage_text)
         if not m:
-            raise TrimDisasterTextError("ダウンロードしたWebページのフォーマットが異なります。")
+            raise TextAnalysisError("ダウンロードしたWebページのフォーマットが異なります。")
 
         # 災害情報の文字列を抜き出す
         disaster_text_list.extend(self._trim_disaster_text_current(m.group(1)))
@@ -74,3 +76,41 @@ class NagaokaMain:
         disaster_list_past.extend([DisasterTextInfo(dinfo, DisasterTextType.PAST) for dinfo in info_list])
 
         return disaster_list_past
+
+    def _is_new_disaster_text(self, disaster_text_info: DisasterTextInfo) -> bool:
+        try:
+            # DBに接続
+            conn: Final[sqlite3.Connection] = sqlite3.connect(self._db_file_path)
+            cursor: Final[sqlite3.Cursor] = conn.cursor()
+
+            # 登録済みであるか問い合わせ
+            sql_tmpl = 'SELECT COUNT(*) FROM t_disaster_text_nagaoka WHERE disaster_text = ?;'
+            values = (disaster_text_info.disaster_text, )
+            count = cursor.execute(sql_tmpl, values).fetchone()[0]
+
+            # DBから切断
+            conn.commit()
+            conn.close()
+
+            return False if count == 0 else True
+
+        except Exception as err:
+            raise DbOperationError(err)
+
+    def _register_disaster_text(self, disaster_text_info: DisasterTextInfo):
+        try:
+            # DBに接続
+            conn: Final[sqlite3.Connection] = sqlite3.connect(self._db_file_path)
+            cursor: Final[sqlite3.Cursor] = conn.cursor()
+
+            # 登録
+            sql_tmpl = 'INSERT INTO t_disaster_text_nagaoka (datetime, disaster_text) VALUES (?, ?);'
+            values = (datetime.datetime.now(), disaster_text_info.disaster_text,)
+            cursor.execute(sql_tmpl, values)
+
+            # DBから切断
+            conn.commit()
+            conn.close()
+
+        except Exception as err:
+            raise DbOperationError(err)
