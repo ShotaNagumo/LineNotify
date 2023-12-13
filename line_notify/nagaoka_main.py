@@ -41,16 +41,29 @@ class NagaokaMain:
             pass
 
     def _download_page(self) -> str:
-        res: Final[requests.Response] = requests.get(NagaokaMain.SITE_URL)
-        if res.status_code != 200:
-            # ダウンロード失敗時のエラー処理
-            self._logger.warning(f'Faild to download webpage. (status_code={res.status_code})')
+        # ダウンロード実行
+        res: requests.Response = requests.Response()
+        try:
+            res = requests.get(NagaokaMain.SITE_URL)
+            self._logger.debug(f'{res.status_code=}')
+            res.raise_for_status()
+        except ConnectionError:
+            self._logger.exception('ConnectionError:')
             raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
-        else:
-            # ダウンロード成功時のテキスト整形処理
-            res.encoding = 'sjis'
-            text_data: str = unicodedata.normalize('NFKC', res.text)
-            text_data = re.sub(r'\u3000', ' ', text_data)
+        except HTTPError:
+            self._logger.exception('HTTPError:')
+            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+        except Timeout:
+            self._logger.exception('Timeout:')
+            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+        except RequestException:
+            self._logger.exception('RequestError:')
+            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+
+        # ダウンロード成功時のテキスト整形処理
+        res.encoding = 'sjis'
+        text_data: str = unicodedata.normalize('NFKC', res.text)
+        text_data = re.sub(r'\u3000', ' ', text_data)
         return text_data
 
     def _trim_disaster_text(self, webpage_text: str) -> list[DisasterTextInfo]:
@@ -129,21 +142,23 @@ class NagaokaMain:
             raise DbOperationError(err)
 
     def _notify_to_line(self, message: str):
+        # メッセージの投稿を実行
+        res: requests.Response = requests.Response()
         try:
             headers = {'Authorization': f'Bearer {self._access_token}'}
             payload = {'message': message}
-            res: Final[requests.Response] = requests.post(NagaokaMain.NOTIFY_URL, headers=headers, params=payload)
+            res = requests.post(NagaokaMain.NOTIFY_URL, headers=headers, params=payload)
             self._logger.debug(f'{res.status_code=}')
             res.raise_for_status()
         except ConnectionError:
-            self._logger.exception('ConnectionError:')
+            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
             raise NotifyError
         except HTTPError:
-            self._logger.exception('HTTPError:')
+            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
             raise NotifyError
         except Timeout:
-            self._logger.exception('Timeout:')
+            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
             raise NotifyError
         except RequestException:
-            self._logger.exception('RequestError:')
+            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
             raise NotifyError
