@@ -1,0 +1,38 @@
+version: 1
+
+formatters:
+  std_format:
+    format: '%(asctime)s [PID:%(process)d] [%(filename)s:%(lineno)s] [%(levelname)s] %(message)s'
+
+handlers:
+  file_out:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: std_format
+    filename: {{ log_output_dir }}/{{ logger_name }}.log
+    when: MIDNIGHT
+    backupCount: 31
+    encoding: utf-8
+  file_out_debug:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: DEBUG
+    formatter: std_format
+    filename: {{ log_output_dir }}/{{ logger_name }}.debug.log
+    when: MIDNIGHT
+    backupCount: 5
+    encoding: utf-8
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: std_format
+
+loggers:
+  server_logger:
+    level: DEBUG
+    # handlers: [file_out]
+    handlers: [console, file_out, file_out_debug]  # on_debug
+    propagate: no
+
+root:
+  level: INFO
+  handlers: []
