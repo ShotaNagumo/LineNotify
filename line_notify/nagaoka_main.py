@@ -2,6 +2,7 @@ import sqlite3
 import re
 import os
 import requests
+from requests import ConnectionError, HTTPError, Timeout, RequestException
 import unicodedata
 import datetime
 from logging import getLogger, Logger
@@ -10,7 +11,7 @@ from typing import Final
 from pathlib import Path
 
 from logger_initializer import initialize_logger
-from errors import DownloadPageError, TextAnalysisError, DbOperationError
+from errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
 from structures import DisasterTextInfo, DisasterTextType
 
 
@@ -23,6 +24,7 @@ class NagaokaMain:
         initialize_logger('nagaoka')
         self._logger: Final[Logger] = getLogger('server_logger')
         self._db_file_path: Final[Path] = Path()
+        self._access_token: str = ''
 
     def main(self):
         try:
@@ -125,3 +127,23 @@ class NagaokaMain:
 
         except Exception as err:
             raise DbOperationError(err)
+
+    def _notify_to_line(self, message: str):
+        try:
+            headers = {'Authorization': f'Bearer {self._access_token}'}
+            payload = {'message': message}
+            res: Final[requests.Response] = requests.post(NagaokaMain.NOTIFY_URL, headers=headers, params=payload)
+            self._logger.debug(f'{res.status_code=}')
+            res.raise_for_status()
+        except ConnectionError:
+            self._logger.exception('ConnectionError:')
+            raise NotifyError
+        except HTTPError:
+            self._logger.exception('HTTPError:')
+            raise NotifyError
+        except Timeout:
+            self._logger.exception('Timeout:')
+            raise NotifyError
+        except RequestException:
+            self._logger.exception('RequestError:')
+            raise NotifyError

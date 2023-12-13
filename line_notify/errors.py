@@ -8,3 +8,7 @@ class TextAnalysisError(Exception):
 
 class DbOperationError(Exception):
     pass
+
+
+class NotifyError(Exception):
+    pass
