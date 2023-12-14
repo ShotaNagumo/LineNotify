@@ -12,19 +12,25 @@ from pathlib import Path
 
 from logger_initializer import initialize_logger
 from errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
-from structures import DisasterTextInfo, DisasterTextType
+from structures import DisasterTextInfo, DisasterTextType, MainClassSetting
 
 
 class NagaokaMain:
     SITE_URL: Final[str] = 'http://www.nagaoka-fd.com/fire/saigai/saigaipc.html'
     NOTIFY_URL: Final[str] = 'https://notify-api.line.me/api/notify'
 
-    def __init__(self):
+    def __init__(self, project_root: Path):
+        self._project_root = project_root
+        setting_file_path: Final[Path] = self._project_root / 'config' / 'config.yaml'
+
+        # 設定値を読み取り
+        self._settings = MainClassSetting(setting_file_path)
+
         # loggerを初期化し取得
-        initialize_logger('nagaoka')
+        log_dir: Path = self._settings.variable_dir / 'log'
+        initialize_logger(self._project_root, log_dir, 'line_notify_nagaoka')
         self._logger: Final[Logger] = getLogger('server_logger')
         self._db_file_path: Final[Path] = Path()
-        self._access_token: str = ''
 
     def main(self):
         try:
@@ -141,11 +147,11 @@ class NagaokaMain:
         except Exception as err:
             raise DbOperationError(err)
 
-    def _notify_to_line(self, message: str):
+    def _notify_to_line(self, access_token: str, message: str):
         # メッセージの投稿を実行
         res: requests.Response = requests.Response()
         try:
-            headers = {'Authorization': f'Bearer {self._access_token}'}
+            headers = {'Authorization': f'Bearer {access_token}'}
             payload = {'message': message}
             res = requests.post(NagaokaMain.NOTIFY_URL, headers=headers, params=payload)
             self._logger.debug(f'{res.status_code=}')
