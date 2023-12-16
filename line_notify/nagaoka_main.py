@@ -10,9 +10,9 @@ import glob
 from typing import Final
 from pathlib import Path
 
-from logger_initializer import initialize_logger
-from errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
-from structures import DisasterTextInfo, DisasterTextType, MainClassSetting
+from line_notify.logger_initializer import initialize_logger
+from line_notify.errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
+from line_notify.structures import DisasterTextInfo, DisasterTextType, MainClassSetting
 
 
 class NagaokaMain:
