@@ -29,7 +29,7 @@ class MainClassSetting:
             raise Exception('config.yaml format error.')
 
         # 設定値の読み取り（variable_dir）
-        variable_dir: Path = config_data.get('variable_dir', '')
+        variable_dir: Path = Path(config_data.get('variable_dir', ''))
         try:
             if not variable_dir.exists():
                 os.makedirs(variable_dir)
