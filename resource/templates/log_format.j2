@@ -27,7 +27,7 @@ handlers:
     formatter: std_format
 
 loggers:
-  server_logger:
+  {{ logger_name }}:
     level: DEBUG
     # handlers: [file_out]
     handlers: [console, file_out, file_out_debug]  # on_debug
