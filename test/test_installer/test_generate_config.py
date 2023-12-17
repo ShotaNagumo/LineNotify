@@ -26,7 +26,6 @@ def test_create_config_file():
         with open(Path(config_dir / 'config.yaml'), mode='rt', encoding='utf-8') as fp:
             generated_data = fp.read()
         assert expect_data == generated_data
-        print(expect_data)
 
         # 設定ファイル作成確認2（config_versionが不正）
         test_data = {'config_version': '', 'variable_dir': variable_dir}
