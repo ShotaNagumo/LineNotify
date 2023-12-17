@@ -6,7 +6,7 @@ import os
 from typing import Final
 
 
-def initialize_logger(project_root: Path, log_output_dir: Path, logger_name: str):
+def initialize_logger(project_root: Path, log_output_dir: Path, logger_name: str) -> bool:
     try:
         # ログ出力先ディレクトリを確認し、存在しない場合作成
         if not log_output_dir.exists():
