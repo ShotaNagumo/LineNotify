@@ -55,16 +55,16 @@ class NagaokaMain:
             res.raise_for_status()
         except ConnectionError:
             self._logger.exception('ConnectionError:')
-            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+            raise DownloadPageError('Faild to download webpage. (ConnectionError)')
         except HTTPError:
-            self._logger.exception('HTTPError:')
-            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+            self._logger.exception(f'HTTPError, response={res}:')
+            raise DownloadPageError(f'Faild to download webpage. (HTTPError, status_code={res.status_code})')
         except Timeout:
             self._logger.exception('Timeout:')
-            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+            raise DownloadPageError('Faild to download webpage. (Timeout)')
         except RequestException:
-            self._logger.exception('RequestError:')
-            raise DownloadPageError(f'Faild to download webpage. (status_code={res.status_code})')
+            self._logger.exception('RequestException:')
+            raise DownloadPageError('Faild to download webpage. (RequestException)')
 
         # ダウンロード成功時のテキスト整形処理
         res.encoding = 'sjis'
@@ -157,14 +157,14 @@ class NagaokaMain:
             self._logger.debug(f'{res.status_code=}')
             res.raise_for_status()
         except ConnectionError:
-            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
-            raise NotifyError
+            self._logger.exception('ConnectionError:')
+            raise NotifyError('Faild to post message. (ConnectionError)')
         except HTTPError:
-            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
-            raise NotifyError
+            self._logger.exception(f'HTTPError, response={res}:')
+            raise NotifyError(f'Faild to post message. (HTTPError, status_code={res.status_code})')
         except Timeout:
-            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
-            raise NotifyError
+            self._logger.exception('Timeout:')
+            raise NotifyError('Faild to post message. (Timeout)')
         except RequestException:
-            self._logger.exception(f'Failed to post message. (status_code={res.status_code})')
-            raise NotifyError
+            self._logger.exception('RequestException:')
+            raise NotifyError('Faild to post message. (RequestException)')
