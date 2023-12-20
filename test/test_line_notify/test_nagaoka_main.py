@@ -3,9 +3,11 @@ import re
 from pathlib import Path
 import shutil
 import logging
+import requests
 
 from installer.generate_config import GenerateConfig
 from line_notify.nagaoka_main import NagaokaMain
+from line_notify.errors import DownloadPageError
 
 
 project_root = Path(__file__) / '..' / '..' / '..'
@@ -17,7 +19,7 @@ test_input_dir = test_dir / 'test_resource' / 'input'
 test_expect_dir = test_dir / 'test_resource' / 'expect'
 
 
-def test_download_page():
+def test_download_page(mocker):
     try:
         # テスト用設定ファイル作成
         config_data = {'config_version': '1', 'variable_dir': variable_dir}
@@ -26,25 +28,28 @@ def test_download_page():
 
         # インスタンス生成
         instance = NagaokaMain(project_root)
-        assert True
 
-#         # 設定ファイル作成確認1
-#         with open(Path(test_expect_dir / 'config.1.yaml'), mode='rt', encoding='utf-8') as fp:
-#             expect_data = fp.read()
-#         with open(Path(config_dir / 'config.yaml'), mode='rt', encoding='utf-8') as fp:
-#             generated_data = fp.read()
-#         assert expect_data == generated_data
-#         print(expect_data)
+        # ConnectionError
+        with mocker.patch('requests.get', side_effect=requests.ConnectionError()):
+            with pytest.raises(DownloadPageError):
+                instance._download_page()
 
-#         # 設定ファイル作成確認2（config_versionが不正）
-#         test_data = {'config_version': '', 'variable_dir': variable_dir}
-#         with pytest.raises(Exception, match=re.escape('Invalid argument. (config_version)')):
-#             instance.create_config_file(**test_data)
+        # Timeout
+        with mocker.patch('requests.get', side_effect=requests.Timeout()):
+            with pytest.raises(DownloadPageError):
+                instance._download_page()
 
-#         # 設定ファイル作成確認3（variable_dirが不正）
-#         test_data = {'config_version': '100', 'variable_dir': ''}
-#         with pytest.raises(Exception, match=re.escape('Invalid argument. (variable_dir)')):
-#             instance.create_config_file(**test_data)
+        # RequestsException
+        with mocker.patch('requests.get', side_effect=requests.RequestException()):
+            with pytest.raises(DownloadPageError):
+                instance._download_page()
+
+        # HTTPError
+        res = requests.Response()
+        res.status_code = 400
+        with mocker.patch('requests.get', return_value=res):
+            with pytest.raises(DownloadPageError):
+                instance._download_page()
 
     finally:
         # loggerを停止（この処理を行わないと、次のディレクトリ削除処理でエラーとなりテスト失敗する）
