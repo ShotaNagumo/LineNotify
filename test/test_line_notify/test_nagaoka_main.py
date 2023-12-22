@@ -29,6 +29,25 @@ def test_download_page(mocker):
         # インスタンス生成
         instance = NagaokaMain(project_root)
 
+        # ダウンロードに成功するケース
+        # テスト入力データ読み込み
+        testdata_file_input = test_input_dir / '20231221_1520.txt'
+        with open(testdata_file_input, mode='rt', encoding='sjis') as fp:
+            testdata_in = fp.read()
+        res = requests.Response()
+        res._content = str.encode(testdata_in, encoding='sjis')
+        res.status_code = 200
+
+        # テスト正解データ読み込み
+        testdata_file_expect = test_expect_dir / '20231221_1520.txt'
+        with open(testdata_file_expect, mode='rt', encoding='utf-8') as fp:
+            testdata_expect = fp.read()
+
+        # check
+        with mocker.patch('requests.get', return_value=res):
+            ret = instance._download_page()
+            assert testdata_expect == ret
+
         # ConnectionError
         with mocker.patch('requests.get', side_effect=requests.ConnectionError()):
             with pytest.raises(DownloadPageError, match=re.escape('Faild to download webpage. (ConnectionError)')):
