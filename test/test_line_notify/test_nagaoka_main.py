@@ -31,7 +31,7 @@ def test_download_page(mocker):
 
         # ダウンロードに成功するケース
         # テスト入力データ読み込み
-        testdata_file_input = test_input_dir / '20231221_1520.txt'
+        testdata_file_input = test_input_dir / 'webtext_1.txt'
         with open(testdata_file_input, mode='rt', encoding='sjis') as fp:
             testdata_in = fp.read()
         res = requests.Response()
@@ -39,7 +39,7 @@ def test_download_page(mocker):
         res.status_code = 200
 
         # テスト正解データ読み込み
-        testdata_file_expect = test_expect_dir / '20231221_1520.txt'
+        testdata_file_expect = test_expect_dir / 'webtext_1.txt'
         with open(testdata_file_expect, mode='rt', encoding='utf-8') as fp:
             testdata_expect = fp.read()
 
