@@ -100,11 +100,11 @@ class NagaokaMain:
         disaster_list_past: list[DisasterTextInfo] = []
 
         # 鎮圧、鎮火、救助完了
-        info_list = re.findall(r'(\d\d月\d\d日.+?は\d\d:\d\dに.+?しました。)', webpage_text_past, re.DOTALL)
+        info_list = re.findall(r'(\d\d月\d\d日.+?は\d\d:\d\dに.+?しました。)', webpage_text_past)
         disaster_list_past.extend([DisasterTextInfo(dinfo, DisasterTextType.PAST_WITH_TIME) for dinfo in info_list])
 
         # 消火不要
-        info_list = re.findall(r'(\d\d月\d\d日.+?は消火の必要はありませんでした。)', webpage_text_past, re.DOTALL)
+        info_list = re.findall(r'(\d\d月\d\d日.+?は消火の必要はありませんでした。)', webpage_text_past)
         disaster_list_past.extend([DisasterTextInfo(dinfo, DisasterTextType.PAST) for dinfo in info_list])
 
         return disaster_list_past
