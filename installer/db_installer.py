@@ -6,15 +6,25 @@ from typing import Final
 
 def init_argparser():
     parser = argparse.ArgumentParser()
+    sub_parsers = parser.add_subparsers()
 
-    parser.add_argument('variable_dir')
-    parser.add_argument('mode', choices=['initialize', 'update', ])
-    parser.add_argument('new_version', type=int)
+    parser_initialize = sub_parsers.add_parser('initialize')
+    parser_initialize.add_argument('variable_dir')
+    parser_initialize.set_defaults(func=db_initialize)
+
+    parser_update = sub_parsers.add_parser('update')
+    parser_update.add_argument('variable_dir')
+    parser_update.add_argument('new_version', type=int)
+    parser_update.set_defaults(func=db_update)
 
     return parser
 
 
-def db_initialize(database_file_path: Path):
+def db_initialize(args):
+    # DBに接続
+    variable_path = Path(args.variable_dir)
+    database_file_path = variable_path / 'database' / 'line_notify.db'
+    database_file_path.parent.mkdir(exist_ok=True)
     conn: Final[sqlite3.Connection] = sqlite3.connect(database_file_path)
     cursor: Final[sqlite3.Cursor] = conn.cursor()
 
@@ -53,24 +63,11 @@ def db_initialize(database_file_path: Path):
         conn.commit()
 
 
-def db_update(database_file_path: Path, new_version: int):
-    pass
-
-
-def execute(args):
-    variable_path = Path(args.variable_dir)
-    database_file_path = variable_path / 'database' / 'line_notify.db'
-    database_file_path.parent.mkdir(exist_ok=True)
-
-    if args.mode == 'initialize':
-        db_initialize(database_file_path)
-    elif args.mode == 'update':
-        db_update(database_file_path, args.new_version)
-    else:
-        print('"mode" is invalid.')
+def db_update(args):
+    print('TODO: implement db_update()')
 
 
 if __name__ == '__main__':
     parser = init_argparser()
     args = parser.parse_args()
-    execute(args)
+    args.func(args)
