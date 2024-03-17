@@ -1,36 +1,40 @@
 import sqlite3
 import re
-import os
 import requests
 from requests import ConnectionError, HTTPError, Timeout, RequestException
 import unicodedata
 import datetime
 from logging import getLogger, Logger
-import glob
 from typing import Final
 from pathlib import Path
 
 from line_notify.logger_initializer import initialize_logger
 from line_notify.errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
-from line_notify.structures import DisasterTextInfo, DisasterTextType, MainClassSetting
+from line_notify.structures import MainClassSetting
 
 
 class NagaokaMain:
     SITE_URL: Final[str] = 'http://www.nagaoka-fd.com/fire/saigai/saigaipc.html'
     NOTIFY_URL: Final[str] = 'https://notify-api.line.me/api/notify'
 
-    def __init__(self, project_root: Path):
-        self._project_root = project_root
-        setting_file_path: Final[Path] = self._project_root / 'config' / 'config.yaml'
+    def __init__(self):
+        # ソフトウェア本体のパスを取得
+        self._software_dir = Path(__file__).parent / '..'
+        self._software_dir = Path.absolute(self._software_dir)
 
         # 設定値を読み取り
-        self._settings = MainClassSetting(setting_file_path)
+        setting_file_path: Final[Path] = self._software_dir / 'config' / 'config.yaml'
+        settings = MainClassSetting(setting_file_path)
+        self._variable_dir = settings.variable_dir
 
         # loggerを初期化し取得
-        log_dir: Path = self._settings.variable_dir / 'log'
-        initialize_logger(self._project_root, log_dir, 'line_notify_nagaoka')
+        log_dir: Final[Path] = self._variable_dir / 'log'
+        initialize_logger(self._software_dir, log_dir, 'line_notify_nagaoka')
         self._logger: Final[Logger] = getLogger('server_logger')
-        self._db_file_path: Final[Path] = Path()
+
+        # DBへのパスを取得
+        self._master_db_path: Final[Path] = self._variable_dir / 'db' / 'line_notify_admin.db'
+        self._data_db_path: Final[Path] = self._variable_dir / 'db' / 'line_notify_admin.db'
 
     def main(self):
         try:
