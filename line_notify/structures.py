@@ -1,39 +1,32 @@
-from dataclasses import dataclass
-from enum import Enum, auto
 from pathlib import Path
 import yaml
 import os
 
 
-class DisasterTextType(Enum):
-    CURERNT = auto()
-    PAST = auto()
-    PAST_WITH_TIME = auto()
-
-
-@dataclass
-class DisasterTextInfo:
-    disaster_text: str
-    disaster_text_type: DisasterTextType
-
-
 class MainClassSetting:
     def __init__(self, setting_file_path: Path):
-        # 設定ファイルからデータの読み取り
-        with open(setting_file_path, mode='rt', encoding='utf-8') as fp:
-            setting_data = yaml.safe_load(fp)
-
-        # 設定ファイルの構造チェック
-        config_data = setting_data.get('config', None)
-        if config_data is None:
-            raise Exception('config.yaml format error.')
-
-        # 設定値の読み取り（variable_dir）
-        variable_dir: Path = Path(config_data.get('variable_dir', ''))
         try:
+            # 設定ファイルが存在するかを確認
+            if not setting_file_path.exists():
+                raise FileNotFoundError('config file does not exist.')
+
+            # 設定ファイルからデータの読み取り
+            setting_data = yaml.safe_load(setting_file_path.read_text(encoding='utf-8'))
+
+            # 設定ファイルの構造チェック
+            if (config_data := setting_data.get('config', None)) is None:
+                raise ValueError('config file illegal format.')
+
+            # 設定値の読み取り（variable_dir）
+            if not (variable_dir := Path(config_data.get('variable_dir', ''))):
+                raise ValueError('config file illegal format.')
+
+            # ディレクトリ確認、生成
             if not variable_dir.exists():
                 os.makedirs(variable_dir)
-        except Exception:
-            # ディレクトリが存在せず、生成もできない場合は無効設定値と判定してExceptionをraise
-            raise Exception('config.yaml: variable_dir could not create.')
-        self.variable_dir = variable_dir
+
+            # 読み取った値をインスタンス変数に保存
+            self.variable_dir: Path = variable_dir
+
+        except Exception as err:
+            raise err
