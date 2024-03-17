@@ -6,14 +6,14 @@ import os
 from typing import Final
 
 
-def initialize_logger(project_root: Path, log_output_dir: Path, logger_name: str) -> bool:
+def initialize_logger(software_root: Path, log_output_dir: Path, logger_name: str):
     try:
         # ログ出力先ディレクトリを確認し、存在しない場合作成
         if not log_output_dir.exists():
             os.makedirs(log_output_dir)
 
         # Templateを読み込み
-        template_dir: Final[Path] = project_root / 'resource' / 'templates'
+        template_dir: Final[Path] = software_root / 'resource' / 'templates'
         env: Final[Environment] = Environment(loader=FileSystemLoader(template_dir))
         template_data: Final[Template] = env.get_template('log_format.j2')
 
@@ -26,6 +26,4 @@ def initialize_logger(project_root: Path, log_output_dir: Path, logger_name: str
 
     except Exception as err:
         print(f'Exception is occurred: {err}')
-        return False
-
-    return True
+        raise err

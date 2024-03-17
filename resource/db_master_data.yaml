@@ -1,7 +1,6 @@
 admin:
   system:
     db_version: 1
-    db_version_2: 1
   line_access_token:
     Niigata: access_token  # TODO: replace 'access_token' to actual token.
     Nagaoka: access_token  # TODO: replace 'access_token' to actual token.
