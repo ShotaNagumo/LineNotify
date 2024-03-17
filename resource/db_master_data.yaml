@@ -1,0 +1,38 @@
+admin:
+  system:
+    db_version: 1
+    db_version_2: 1
+  line_access_token:
+    Niigata: access_token  # TODO: replace 'access_token' to actual token.
+    Nagaoka: access_token  # TODO: replace 'access_token' to actual token.
+
+data:
+  city_name:
+    - 新潟市
+    - 長岡市
+  disaster_category:
+    - 火災
+    - 救助
+    - 警戒
+    - 救急
+    - その他
+  disaster_status:
+    - 発生
+    - 鎮圧
+    - 鎮火
+    - 救助完了
+    - 消火不要
+  district:
+    - 新潟市中央区
+    - 新潟市東区
+    - 新潟市西区
+    - 新潟市南区
+    - 新潟市北区
+    - 新潟市江南区
+    - 新潟市秋葉区
+    - 新潟市西蒲区
+    - 道路等（新潟市）
+    - 市外（新潟市）
+    - 長岡市
+    - 道路等（長岡市）
+    - 市外（長岡市）
