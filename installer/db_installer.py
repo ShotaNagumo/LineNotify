@@ -57,7 +57,7 @@ def db_initialize(args):
                     'CREATE TABLE IF NOT EXISTS t_disaster_text (\n'
                     'disaster_id INTEGER PRIMARY KEY AUTOINCREMENT,\n'
                     'created_at TEXT DEFAULT (DATETIME(\'now\', \'localtime\')),\n'
-                    'city_name REFERENCES t_city_name(rowid),\n'
+                    'city_id REFERENCES t_city_name(rowid),\n'
                     'disaster_text TEXT NOT NULL,\n'
                     'line_notified INTEGER NOT NULL DEFAULT 0\n'
                     ');'
