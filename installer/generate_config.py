@@ -13,16 +13,13 @@ class GenerateConfig:
         self._env: Final[Environment] = Environment(loader=FileSystemLoader(template_dir))
         self._template_data: Final[Template] = self._env.get_template(GenerateConfig.TEMPLATE_FILE_NAME)
 
-    def create_config_file(self, config_version: str, variable_dir: str):
+    def create_config_file(self, variable_dir: str):
         # 入力データチェック
-        if config_version == '':
-            raise Exception('Invalid argument. (config_version)')
         if variable_dir == '':
             raise Exception('Invalid argument. (variable_dir)')
 
         # 設定データを生成
         data = {
-            'version': config_version,
             'variable_dir': variable_dir,
         }
         settings: Final[str] = self._template_data.render(data)
