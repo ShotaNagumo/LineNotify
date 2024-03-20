@@ -10,7 +10,7 @@ from pathlib import Path
 
 from line_notify.logger_initializer import initialize_logger
 from line_notify.errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
-from line_notify.structures import MainClassSetting
+from line_notify.structures import MainClassSetting, DisasterTextType, DisasterTextInfo
 
 
 class NagaokaMain:
@@ -97,7 +97,7 @@ class NagaokaMain:
     def _trim_disaster_text_current(self, webpage_text_current: str) -> list[DisasterTextInfo]:
         # 現在発生中の災害を抜き出す
         info_list = re.findall(r'(\d\d月\d\d日.+?出動しました。)', webpage_text_current, re.DOTALL)
-        return [DisasterTextInfo(dinfo, DisasterTextType.CURERNT) for dinfo in info_list]
+        return [DisasterTextInfo(dinfo, DisasterTextType.CURRENT) for dinfo in info_list]
 
     def _trim_disaster_text_past(self, webpage_text_past: str) -> list[DisasterTextInfo]:
         # 終了した災害の一部（鎮圧、鎮火、消火不要、救助完了）を抜き出す

@@ -1,6 +1,20 @@
+from dataclasses import dataclass
+from enum import Enum, auto
 from pathlib import Path
 import yaml
 import os
+
+
+class DisasterTextType(Enum):
+    CURRENT = auto()
+    PAST = auto()
+    PAST_WITH_TIME = auto()
+
+
+@dataclass
+class DisasterTextInfo:
+    disaster_text: str
+    disaster_text_type: DisasterTextType
 
 
 class MainClassSetting:
