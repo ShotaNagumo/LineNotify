@@ -5,10 +5,10 @@ import shutil
 import logging
 import requests
 
-from installer.generate_config import GenerateConfig
-from line_notify.nagaoka_main import NagaokaMain
-from line_notify.structures import DisasterTextInfo, DisasterTextType
-from line_notify.errors import DownloadPageError, NotifyError, TextAnalysisError
+from scripts.installer.generate_config import GenerateConfig
+from line_notify.src.nagaoka_main import NagaokaMain
+from line_notify.src.structures import DisasterTextInfo, DisasterTextType
+from line_notify.src.errors import DownloadPageError, NotifyError, TextAnalysisError
 
 
 project_root = Path(__file__) / '..' / '..' / '..'

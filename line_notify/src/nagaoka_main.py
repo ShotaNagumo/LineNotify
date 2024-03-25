@@ -7,6 +7,7 @@ import datetime
 from logging import getLogger, Logger
 from typing import Final
 from pathlib import Path
+import contextlib
 
 from line_notify.logger_initializer import initialize_logger
 from line_notify.errors import DownloadPageError, TextAnalysisError, DbOperationError, NotifyError
@@ -115,28 +116,32 @@ class NagaokaMain:
 
     def _is_new_disaster_text(self, disaster_text_info: DisasterTextInfo) -> bool:
         try:
-            # DBに接続
-            conn: Final[sqlite3.Connection] = sqlite3.connect(self._db_file_path)
-            cursor: Final[sqlite3.Cursor] = conn.cursor()
+            # データ用DBに接続
+            with contextlib.closing(sqlite3.connect(self._data_db_path)) as conn:
+                # 都市名IDを取得
+                city_id = -1
+                with conn as cur:
+                    city_id = cur.execute(
+                        'SELECT rowid FROM t_city_name WHERE city_name=?;',
+                        ('長岡市',)
+                    ).fetchone()[0]
+                if city_id == -1:
+                    raise DbOperationError('都市ID取得エラー')
+
+                # 登録済みであるかを確認
 
             # 登録済みであるか問い合わせ
-            sql_tmpl = 'SELECT COUNT(*) FROM t_disaster_text_nagaoka WHERE disaster_text = ?;'
-            values = (disaster_text_info.disaster_text, )
-            count = cursor.execute(sql_tmpl, values).fetchone()[0]
+            # sql_tmpl = 'SELECT COUNT(*) FROM t_disaster_text_nagaoka WHERE disaster_text = ?;'
 
-            # DBから切断
-            conn.commit()
-            conn.close()
-
-            return False if count == 0 else True
+            return True
 
         except Exception as err:
-            raise DbOperationError(err)
+            raise err
 
     def _register_disaster_text(self, disaster_text_info: DisasterTextInfo):
         try:
-            # DBに接続
-            conn: Final[sqlite3.Connection] = sqlite3.connect(self._db_file_path)
+            # データ管理用DBに接続
+            conn: Final[sqlite3.Connection] = sqlite3.connect(self._data_db_path)
             cursor: Final[sqlite3.Cursor] = conn.cursor()
 
             # 登録

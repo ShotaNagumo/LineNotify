@@ -1,47 +1,36 @@
 import pytest
-import re
 from pathlib import Path
 import shutil
 
-from installer.generate_config import GenerateConfig
-from line_notify.structures import MainClassSetting
+from scripts.installer.generate_config import GenerateConfig
 
-project_root = Path(__file__) / '..' / '..' / '..'
+project_root: Path = Path(__file__) / '..' / '..' / '..'  # ./LineNotify
 project_root = project_root.resolve()
+template_dir = project_root / 'resource' / 'templates'
+
 config_path = project_root / 'config' / 'config.yaml'
-variable_dir = project_root / 'test' / 'test_ws'
-test_dir = project_root / 'test'
-test_input_dir = test_dir / 'test_resource' / 'input'
-test_expect_dir = test_dir / 'test_resource' / 'expect'
+test_dir = project_root / 'test_ws' / 'test_structures'
+test_dir_in = test_dir / 'input'
+test_dir_out = test_dir / 'output'
 
 
 def test_init(mocker):
     try:
-        # テスト用設定ファイル作成
-        config_data = {'config_version': '1', 'variable_dir': variable_dir}
-        gen_conf = GenerateConfig(project_root)
-        gen_conf.create_config_file(**config_data)
+        # 正常系
+        gen_conf = GenerateConfig(template_dir)
+        gen_conf.create_config_file(test_dir_out, Path('/var/opt/line_notify'))
+        generated_data = Path(test_dir_out / 'config.yaml').read_text(encoding='utf-8')
+        expect_data = Path(test_dir_in / 'config.yaml').read_text(encoding='utf-8')
+        assert expect_data == generated_data
 
-        # インスタンス生成確認1（成功）
-        MainClassSetting(config_path)
-        assert True
+        # 異常系（TemplateNotFound発生）
+        with (mocker.patch('pathlib.Path.mkdir', side_effect=Exception()), pytest.raises(Exception)):
+            gen_conf = GenerateConfig(template_dir)
+            gen_conf.create_config_file(test_dir_out, Path('/var/opt/line_notify'))
 
-        # インスタンス生成確認2（設定ファイル構造エラー）
-        copy_src = test_input_dir / 'test_structures_fail_1.yaml'
-        shutil.copy(copy_src, config_path)
-        with pytest.raises(Exception, match=re.escape('config.yaml format error.')):
-            MainClassSetting(config_path)
-
-        # インスタンス生成確認3（variable_dir生成エラー）
-        gen_conf.create_config_file(**config_data)
-        if variable_dir.exists():
-            shutil.rmtree(variable_dir)
-        with mocker.patch('os.makedirs', side_effect=FileExistsError()):
-            with pytest.raises(Exception, match=re.escape('config.yaml: variable_dir could not create.')):
-                MainClassSetting(config_path)
+    except Exception as err:
+        raise err
 
     finally:
-        if variable_dir.exists():
-            shutil.rmtree(variable_dir)
-        if config_path.parent.exists():
-            shutil.rmtree(config_path.parent)
+        if test_dir_out.is_dir():
+            shutil.rmtree(test_dir_out)
