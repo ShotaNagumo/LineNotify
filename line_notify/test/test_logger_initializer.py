@@ -1,40 +1,38 @@
 from pathlib import Path
 import shutil
 import logging
+import pytest
 
-from line_notify.logger_initializer import initialize_logger
+from line_notify.src.logger_initializer import initialize_logger
+
+template_dir = Path(__file__).parent.parent / 'resource' / 'templates'
 
 
-def test_initialize_logger_1():
-    project_root = Path(__file__) / '..' / '..' / '..'
-    project_root = project_root.resolve()
-    variable_dir = project_root / 'test' / 'test_ws1'
-    log_dir = variable_dir / 'log'
+@pytest.fixture
+def create_log_dir(tmpdir):
+    Path(__file__).with_name('a.txt').write_text(f'{tmpdir=}')
+    log_dir: Path = Path(tmpdir)
+    yield log_dir
+    shutil.rmtree(log_dir.parent.parent)
 
+
+def test_initialize_logger_1(create_log_dir):
     try:
         # logger初期化確認1（成功）
-        ret = initialize_logger(project_root, log_dir, 'logger_test')
-        assert ret
+        ret = initialize_logger(template_dir, create_log_dir, 'logger_test')
+        assert ret is None
 
     finally:
         # loggerを停止（この処理を行わないと、次のディレクトリ削除処理でエラーとなりテスト失敗する）
         logging.shutdown()
 
-        if variable_dir.exists():
-            shutil.rmtree(variable_dir)
 
-
-def test_initialize_logger_2(mocker):
-    project_root = Path(__file__) / '..' / '..' / '..'
-    project_root = project_root.resolve()
-    variable_dir = project_root / 'test' / 'test_ws2'
-    log_dir = variable_dir / 'log'
-
+def test_initialize_logger_2(mocker, create_log_dir):
     try:
         # logger初期化確認2（失敗）
-        with mocker.patch('os.makedirs', side_effect=Exception()):
-            ret = initialize_logger(project_root, log_dir, 'logger_test')
-        assert not ret
+        with (mocker.patch('pathlib.Path.mkdir', side_effect=Exception()),
+             pytest.raises(Exception)):
+            initialize_logger(template_dir, create_log_dir, 'logger_test')
 
     finally:
         # loggerを停止
