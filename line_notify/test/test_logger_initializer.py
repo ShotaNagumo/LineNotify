@@ -10,7 +10,6 @@ template_dir = Path(__file__).parent.parent / 'resource' / 'templates'
 
 @pytest.fixture
 def create_log_dir(tmpdir):
-    Path(__file__).with_name('a.txt').write_text(f'{tmpdir=}')
     log_dir: Path = Path(tmpdir)
     yield log_dir
     shutil.rmtree(log_dir.parent.parent)
