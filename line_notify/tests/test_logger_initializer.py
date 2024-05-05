@@ -1,5 +1,4 @@
 from pathlib import Path
-import shutil
 import logging
 import pytest
 
@@ -12,7 +11,6 @@ template_dir = Path(__file__).parent.parent / 'resource' / 'templates'
 def create_log_dir(tmpdir):
     log_dir: Path = Path(tmpdir)
     yield log_dir
-    shutil.rmtree(log_dir.parent.parent)
 
 
 def test_initialize_logger_1(create_log_dir):
