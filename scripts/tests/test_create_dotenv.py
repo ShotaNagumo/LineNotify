@@ -1,5 +1,5 @@
-from scripts.installer.create_dotenv import CreateDotenv
 import pytest
+from scripts.installer.create_dotenv import CreateDotenv
 
 
 def test_create_success():
