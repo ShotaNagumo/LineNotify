@@ -21,6 +21,14 @@ handlers:
     when: MIDNIGHT
     backupCount: 5
     encoding: utf-8
+  file_out_sqlalchemy:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: DEBUG
+    formatter: std_format
+    filename: {{ log_output_dir}}/sqlalchemy.debug.log
+    when: MIDNIGHT
+    backupCount: 5
+    encoding: utf-8
   console:
     class: logging.StreamHandler
     level: INFO
@@ -32,6 +40,9 @@ loggers:
     # handlers: [file_out]
     handlers: [console, file_out, file_out_debug]  # on_debug
     propagate: no
+  sqlalchemy.engine:
+    handlers: [file_out_sqlalchemy]
+    propagate: yes
 
 root:
   level: INFO
