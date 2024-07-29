@@ -5,23 +5,42 @@ formatters:
     format: '%(asctime)s [PID:%(process)d] [%(filename)s:%(lineno)s] [%(levelname)s] %(message)s'
 
 handlers:
-  file_out:
+  {# 長岡市ログ用 #}
+  file_out_nagaoka:
     class: logging.handlers.TimedRotatingFileHandler
     level: INFO
     formatter: std_format
-    filename: {{ log_output_dir }}/{{ logger_name }}.log
+    filename: {{ log_output_dir }}/nagaoka.log
     when: MIDNIGHT
     backupCount: 31
     encoding: utf-8
-  file_out_debug:
+  file_out_nagaoka_debug:
     class: logging.handlers.TimedRotatingFileHandler
     level: DEBUG
     formatter: std_format
-    filename: {{ log_output_dir }}/{{ logger_name }}.debug.log
+    filename: {{ log_output_dir }}/nagaoka.debug.log
     when: MIDNIGHT
     backupCount: 5
     encoding: utf-8
-  file_out_sqlalchemy:
+  {# 新潟市ログ用 #}
+  file_out_niigata:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: std_format
+    filename: {{ log_output_dir }}/niigata.log
+    when: MIDNIGHT
+    backupCount: 31
+    encoding: utf-8
+  file_out_niigata_debug:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: DEBUG
+    formatter: std_format
+    filename: {{ log_output_dir }}/niigata.debug.log
+    when: MIDNIGHT
+    backupCount: 5
+    encoding: utf-8
+  {# SQLAlchemyログ用 #}
+  file_out_sqlalchemy_debug:
     class: logging.handlers.TimedRotatingFileHandler
     level: DEBUG
     formatter: std_format
@@ -29,19 +48,26 @@ handlers:
     when: MIDNIGHT
     backupCount: 5
     encoding: utf-8
+  {# コンソール出力用 #}
   console:
     class: logging.StreamHandler
     level: INFO
     formatter: std_format
 
 loggers:
-  {{ logger_name }}:
+  ln.nagaoka:
     level: DEBUG
-    # handlers: [file_out]
-    handlers: [console, file_out, file_out_debug]  # on_debug
+    # handlers: [file_out_nagaoka]
+    handlers: [console, file_out_nagaoka, file_out_nagaoka_debug]  # on_debug
+    propagate: no
+  ln.niigata:
+    level: DEBUG
+    # handlers: [file_out_niigata]
+    handlers: [console, file_out_niigata, file_out_niigata_debug]  # on_debug
     propagate: no
   sqlalchemy.engine:
-    handlers: [file_out_sqlalchemy]
+    level: DEBUG
+    handlers: [file_out_sqlalchemy_debug]
     propagate: yes
 
 root:
